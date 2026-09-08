@@ -1,0 +1,43 @@
+{
+  "story_id": "hurricane-2026-0911",
+  "slug": "HURRICANE-GULF",
+  "headline": "Hurricane upgraded to Cat 4 after Gulf Coast landfall",
+  "story_type": "ACTIVE",
+  "sequence_number": 4,
+  "updated_at": "2026-09-11T16:26:00Z",
+  "newsroom_id": "demo-newsroom",
+  "lifecycle": {
+    "phase": "BREAKING",
+    "phase_entered_at": "2026-09-11T16:24:00Z"
+  },
+  "tags": [
+    {
+      "scheme": "iptc-mediatopic",
+      "value": "03000000",
+      "label": "disaster, accident and emergency incident"
+    },
+    {
+      "scheme": "iptc-mediatopic",
+      "value": "17000000",
+      "label": "weather"
+    },
+    {
+      "scheme": "newsroom",
+      "value": "us-desk"
+    },
+    {
+      "scheme": "com.example.ncs",
+      "value": "WX-SEVERE",
+      "label": "Severe weather"
+    }
+  ],
+  "editorial_source": [
+    {
+      "source_id": "src-ap-wire",
+      "source_type": "WIRE",
+      "provider": "AP",
+      "credibility": "TRUSTED",
+      "received_at": "2026-09-11T13:04:00Z"
+    }
+  ]
+}
