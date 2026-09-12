@@ -30,8 +30,9 @@ welcome.
 Every pull request should pass these before review:
 
 ```
-pip install jsonschema
+pip install jsonschema rfc3339-validator
 python3 tools/validate.py                                  # every example against the schemas
+python3 tools/validate_negative.py                         # every negative case is rejected
 python3 tools/som_lint.py schema                           # the schemas against their own claims
 python3 tools/validate_sequence.py examples/hurricane-run  # a story over time
 ```
@@ -40,7 +41,9 @@ If your change touches `skills/`, run its own checks as well; they are listed in
 [`skills/README.md`](skills/README.md).
 
 A change to a schema that makes an existing example fail is a breaking change by
-definition. A change that adds a field should add or extend an example that uses it.
+definition. A change that adds a field should add or extend an example that uses it, and
+a change that adds a constraint should add a case to `examples/negative/` that it
+rejects.
 
 ## What a good pull request looks like
 

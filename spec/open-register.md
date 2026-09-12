@@ -60,11 +60,18 @@ likely to skip by default.
 
 Roughly twenty small files. The highest-value single addition to this repository.
 
+**Resolved, 12 September 2026.** `examples/negative/` holds twenty must-reject cases and
+`tools/validate_negative.py` proves each is rejected. Adding a constraint to a schema now
+comes with adding the case it rejects.
+
 ## 5. No worked envelope example
 
 All 17 published examples are bare payloads. The envelope — which is required on every
 message, and the one thing every implementation must get right — is exercised by no
 example at all.
+
+**Resolved, 12 September 2026.** `examples/story-context/hurricane-beat6-envelope.json`
+is beat 6 of the hurricane run as it travels on the wire, envelope and all.
 
 ## 6. The generated schema reference
 
