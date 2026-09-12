@@ -115,13 +115,17 @@ Across a sequence of snapshots for one story:
 
 ```
 python3 tools/validate.py
+python3 tools/validate_negative.py
 python3 tools/validate_sequence.py examples/hurricane-run
 ```
 
-Every example in `examples/` MUST validate against the published schemas, with formats
-asserted. An implementation can demonstrate conformance by validating the same corpus
-with its own validator and getting the same result.
+Every example in `examples/` outside `examples/negative/` MUST validate against the
+published schemas, with formats asserted. An implementation can demonstrate conformance
+by validating the same corpus with its own validator and getting the same result.
 
-A negative corpus — messages that MUST be rejected — is not yet published. Until it is,
-conformance for the failure cases is self-asserted, and implementers should treat §4 as
-the place they are most likely to differ from each other without noticing.
+Every case in `examples/negative/` MUST be rejected. Each file states the reason.
+Nineteen are rejected by the schemas alone; `envelope-som-version-0-3-2.json` is rejected
+by §3, not by the schema, because the envelope schema leaves `som_version` open so that a
+1.1 producer can emit `"1.1.0"` without a schema change. An implementation that validates
+with the schemas alone will accept that one case and must apply §3 itself. §4 remains the
+place implementers are most likely to differ from each other without noticing.

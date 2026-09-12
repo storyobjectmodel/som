@@ -66,9 +66,11 @@ python3 tools/validate_sequence.py examples/hurricane-run   # a story over time
 Four different questions. `validate_negative.py` asks whether the schemas actually
 constrain: `examples/negative/` holds twenty messages that must be rejected, each with
 its reason, so that an implementation in any language can be checked against the same
-list. Without `rfc3339-validator`, Python's `jsonschema` silently accepts a malformed
-`timestamp`; that case is in the corpus, so the check fails loudly if the package is
-missing.
+list. Nineteen are rejected by the schemas; the twentieth, `som_version: "0.3.2"`, is
+rejected by the wire-version rule in `spec/conformance.md` §3, which the schema
+deliberately does not encode. Without `rfc3339-validator`, Python's `jsonschema` silently
+accepts a malformed `timestamp`; that case is in the corpus, so the check fails loudly if
+the package is missing.
 
 `validate.py` asks whether a message is legal.
 `som_lint.py` asks whether the schema agrees with what it says about itself.
