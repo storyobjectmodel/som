@@ -1,5 +1,15 @@
 # The SOM Glossary — 260703
 
+> **Note, 12 September 2026.** This is the glossary of 3 July 2026 (version 260703),
+> published with SOM 1.0 as it stood. It was written against schema v0.3.1 with a lookahead
+> to v0.3.2, so it lags the published schema in four known places: it describes
+> `ai_enrichments[]` as CONFIRMED, but v0.3.2 removed it in favour of `assets[]` with
+> authorship provenance and `assertions[]`; it carries `FINALIZING`, `voice_count` and
+> `transform_id` as PROPOSED, but 1.0 withdrew all three to the open register; and the
+> `planning{}` and `editorial_standards` entries remain OPEN. Where this glossary and
+> `schema/` disagree, the schema is right. A full pass to 1.0 is the working group's next
+> job on this file.
+
 **Companion to schema v0.3.1 · Lookahead to schema v0.3.2**
 
 *Naming: the glossary is versioned by date (YYMMDD) as a living companion to the schema. It is re-dated on each update, so its version never clashes with the schema version number.*

@@ -1,6 +1,8 @@
 # Story Object Model 1.0
 
 An open standard for story context in content production.
+Home: [storyobjectmodel.com](https://storyobjectmodel.com). Governance and how to take
+part: [`GOVERNANCE.md`](GOVERNANCE.md). Who made it: [`CONTRIBUTORS.md`](CONTRIBUTORS.md).
 
 A newsroom runs on systems that each hold part of a story: the planning system knows
 what it is about, the media store knows what was shot, the rundown knows where it
@@ -42,6 +44,8 @@ require a 2.0, is set out in [`spec/compatibility-policy.md`](spec/compatibility
 
 ## Start here
 
+0. [`spec/introduction.md`](spec/introduction.md) — why this exists and the six
+   principles behind it, in plain words. Read this if you are not an implementer.
 1. [`spec/conformance.md`](spec/conformance.md) — what it means to be SOM 1.0 conformant.
    Shorter than you expect: most families are opt-in.
 2. [`examples/hurricane-run/`](examples/hurricane-run/) — one story told across seven
@@ -52,13 +56,21 @@ require a 2.0, is set out in [`spec/compatibility-policy.md`](spec/compatibility
 ## Validating
 
 ```
-pip install jsonschema
+pip install jsonschema rfc3339-validator
 python3 tools/validate.py                          # every example against the schemas
+python3 tools/validate_negative.py                 # every negative case is rejected
 python3 tools/som_lint.py schema                   # the schemas against their own claims
 python3 tools/validate_sequence.py examples/hurricane-run   # a story over time
 ```
 
-Three different questions. `validate.py` asks whether a message is legal.
+Four different questions. `validate_negative.py` asks whether the schemas actually
+constrain: `examples/negative/` holds twenty messages that must be rejected, each with
+its reason, so that an implementation in any language can be checked against the same
+list. Without `rfc3339-validator`, Python's `jsonschema` silently accepts a malformed
+`timestamp`; that case is in the corpus, so the check fails loudly if the package is
+missing.
+
+`validate.py` asks whether a message is legal.
 `som_lint.py` asks whether the schema agrees with what it says about itself.
 `validate_sequence.py` asks whether a sequence of snapshots of one story holds
 together — which no single message can answer, and where the expensive bugs live.
@@ -71,11 +83,11 @@ as an annotation and ignore it unless told otherwise, which means a `message_id`
 
 ```
 schema/      the seven families. NORMATIVE. Nothing else here is.
-examples/    17 worked messages, one directory per family
+examples/    18 worked messages, one directory per family, plus negative/ (20 must-reject)
 tools/       validators
 skills/      som-skill-library 0.2.2 — a shared vocabulary for newsroom automation
-spec/        conformance, compatibility policy, migration, open register,
-             glossary, version history
+spec/        introduction and principles, conformance, compatibility policy,
+             migration, open register, glossary, version history
 ```
 
 The skill library versions separately from the standard, and deliberately. `schema/` is
