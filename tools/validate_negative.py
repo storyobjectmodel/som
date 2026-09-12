@@ -87,6 +87,7 @@ def main():
         print(f"FATAL: examples/negative/ holds {len(files)} file(s), expected at least 10")
         sys.exit(1)
     accepted = 0
+    accepted_format_case = False
     for path in files:
         rel = os.path.relpath(path, ROOT)
         case = json.load(open(path, encoding="utf-8"))
@@ -98,10 +99,11 @@ def main():
             print(f"            {label + ':':<13}{first[:110]}")
         else:
             accepted += 1
+            accepted_format_case |= "timestamp" in os.path.basename(path)
             print(f"ACCEPTED  {rel}   <-- must not happen: {case['must_fail_because']}")
     total = len(files)
     print(f"\n{f'OK - {total}/{total} rejected' if not accepted else f'{accepted} of {total} case(s) were ACCEPTED'}")
-    if accepted and not HAS_RFC3339:
+    if accepted_format_case and not HAS_RFC3339:
         print("hint: rfc3339-validator is not installed, so format: date-time is not asserted. pip install rfc3339-validator")
     sys.exit(1 if accepted else 0)
 
