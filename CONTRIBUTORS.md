@@ -16,34 +16,48 @@ demo participation that exercised the model under real conditions.
 If you contributed and are not listed, open a pull request adding yourself — that is
 the intended route, and it does not need anyone's permission.
 
-## Editors
+## Authors
+
+Jon Roberts, Morag McIntosh, Alex Bassett and John Boucklos.
+
+Jon Roberts, Morag McIntosh and Alex Bassett conceived the Story Object Model and
+led the project that developed it, alongside Brian Hopman of AP. John Boucklos
+co-wrote the specification with them, led the schema from its first ratified version
+to 1.0, and built the validators and this repository.
+
+## Contributors
 
 <!--
-  TO COMPLETE BEFORE PUBLICATION.
-
-  Names and affiliations are deliberately not auto-generated here: a wrong
-  attribution in a published standard is worse than a visible gap, and nothing in
-  the working material is reliable enough to infer from.
-
-  Suggested shape, one line each:
-
-      Name — Organisation — what they were responsible for
-
-  From the working record, the following areas have identifiable owners that
-  should be credited: the schema and bus contract; repository consolidation,
-  examples and the apparatus documents; the glossary; the conceptual diagrams and
-  demo beats; the editorial decision-gate work; the newsroom skills library; and
-  the MOS and TAMS bridge analysis.
+  Each person named here is told before publication and may reword or withdraw
+  their line. Notices sent in the week of 8 September 2026.
 -->
+
+- Nigel Caughey: schema engineering alongside the specification author, and the
+  reference implementation
+- Janet Gardner: independent schema review, adopted into v0.3.2
+- Brian Hopman: Story Archaeology, the method that grounded the model in how
+  newsrooms actually work
+- Simon Christie, Chris Fane and John Biltcliffe: the working message bus and
+  dashboard the model was proven on
+
+Anyone whose proposed change was accepted into the schema has earned a line here,
+and the pull request is the way to claim it.
 
 ## Participating organisations
 
-<!--
-  TO COMPLETE. List the organisations that took part in SMART STORIES and in the
-  IBC demonstrations. Confirm each is content to be named before publication —
-  the same consideration that keeps the vendor-specific demo configuration out of
-  this release.
--->
+SMART STORIES ran as an IBC 2026 Accelerator project with fourteen champions and
+seventeen participants.
+
+The champions were ITN, NBCUniversal, AP, Channel 4, Al Jazeera, The Washington Post,
+ITV, BBC, Sky, EBU, SMPTE, Reuters, Scripps and GC-SC (the Global Creative and
+Security Community).
+
+The consortium participants who integrated against the model and took part in the
+IBC demonstrations were Shure, EVS, Cuez, Moments Lab, Perspective Media Group,
+Google Cloud, Trint, Cognizant, Amazon Web Services, Electric Sheep, Nuvelics,
+Octopus, Fonn Group, The Weather Company, HyperContent AI, LiveU and Vizrt, with
+BBC R&D on the TAMS junction. Each is invited to add detail of its integration here
+by pull request.
 
 ## Acknowledgement
 
