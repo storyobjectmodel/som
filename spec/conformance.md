@@ -109,7 +109,12 @@ Across a sequence of snapshots for one story:
 - `originating_system` MUST be re-stamped by whoever publishes, so that a correction is
   attributed to the corrector and not to whoever first minted the story.
 
-`tools/validate_sequence.py` checks all four across a run.
+`tools/validate_sequence.py` checks the first three across a run. For `updated_at` it
+reports a step backwards; an unchanged value passes. It cannot check the fourth: a
+snapshot carries the `originating_system` it was stamped with, not who actually published
+it, so a stale stamp and a correct one look the same. With `--envelopes` it reports a
+related symptom, a changed snapshot republished by the same system under the previous
+`message_id`.
 
 ## 7. Demonstrating conformance
 
