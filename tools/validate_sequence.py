@@ -23,9 +23,11 @@ USAGE
     validate_sequence.py DIR --envelopes      # inputs are wire messages, not payloads
 
 Exit 0 = coherent, 1 = at least one error (or warning under --strict).
-Needs jsonschema>=4.20.
+Needs jsonschema>=4.20, and rfc3339-validator for date-time to be asserted.
 """
 
+import datetime
+import decimal
 import glob
 import json
 import re
@@ -84,6 +86,49 @@ def load_inputs(args, envelopes):
     return out
 
 
+# ------------------------------------------------------------------ time
+
+RFC3339 = re.compile(r"^(\d{4})-(\d{2})-(\d{2})[Tt](\d{2}):(\d{2}):(\d{2})(\.\d+)?"
+                     r"([Zz]|[+-]\d{2}:\d{2})$")
+
+
+def instant(value):
+    """An RFC 3339 date-time as a comparable UTC instant, or None if it is not one.
+
+    The strings do not order as instants: "16:41:00.5Z" sorts before "16:41:00Z",
+    and an offset makes lexical order meaningless. The fraction is kept as a decimal
+    so that digits beyond microseconds still order correctly.
+    """
+    m = RFC3339.match(value) if isinstance(value, str) else None
+    if not m:
+        return None
+    y, mo, d, h, mi, sec, frac, tz = m.groups()
+    if int(sec) > 60:
+        return None
+    try:
+        # A leap second (:60) is the instant one second after :59.
+        t = datetime.datetime(int(y), int(mo), int(d), int(h), int(mi), min(int(sec), 59),
+                              tzinfo=datetime.timezone.utc)
+    except ValueError:
+        return None
+    t += datetime.timedelta(seconds=int(sec) - min(int(sec), 59))
+    if tz not in "Zz":
+        if int(tz[1:3]) > 23 or int(tz[4:6]) > 59:
+            return None
+        off = datetime.timedelta(hours=int(tz[1:3]), minutes=int(tz[4:6]))
+        t = t - off if tz[0] == "+" else t + off
+    return t, decimal.Decimal(frac or "0")
+
+
+def when(name, field, value):
+    """Like instant(), but a value that cannot be ordered is reported."""
+    t = instant(value)
+    if t is None:
+        err(name, f"{field} is not an RFC 3339 date-time",
+            f"{value!r} cannot be ordered against anything")
+    return t
+
+
 # ------------------------------------------------------------------ the rules
 
 def check_snapshot(name, p):
@@ -132,11 +177,13 @@ def check_snapshot(name, p):
 
     # --- causality: a source cannot be published before it arrived
     upd = p.get("updated_at")
-    for s in (p.get("editorial_source") or []):
-        if not isinstance(s, dict):
+    upd_t = when(name, "updated_at", upd) if "updated_at" in p else None
+    for i, s in enumerate(p.get("editorial_source") or []):
+        if not isinstance(s, dict) or "received_at" not in s:
             continue
-        rec = s.get("received_at")
-        if upd and rec and rec > upd:
+        rec = s["received_at"]
+        rec_t = when(name, f"editorial_source[{i}].received_at", rec)
+        if upd_t and rec_t and rec_t > upd_t:
             err(name, "source published before it was received",
                 f"{s.get('source_id')} received_at {rec} > snapshot updated_at {upd}")
 
@@ -147,6 +194,7 @@ def check_sequence(run):
         warn("<run>", "only one snapshot — nothing cross-snapshot can be checked")
 
     first_id = run[0][1].get("story_id")
+    assets = [_assets(name, p) for name, p, _env in run]
     seen_assets = {}
     terminal = {"KILLED", "SPIKED", "ARCHIVED"}
 
@@ -158,8 +206,8 @@ def check_sequence(run):
                 f"same story, never a new story.")
 
         if i == 0:
-            for a in p.get("assets", []):
-                seen_assets[a["asset_id"]] = a.get("asset_type")
+            for aid, a in assets[0].items():
+                seen_assets[aid] = a.get("asset_type")
             continue
 
         _pn, q, qenv = run[i - 1]
@@ -176,7 +224,9 @@ def check_sequence(run):
                      f"{sq} -> {sn}. Legal, and gaps are how a missing snapshot becomes "
                      f"visible at all — but worth knowing it happened.")
 
-        if p.get("updated_at", "") < q.get("updated_at", ""):
+        # An unparseable updated_at was already reported by check_snapshot.
+        pt, qt = instant(p.get("updated_at")), instant(q.get("updated_at"))
+        if pt and qt and pt < qt:
             err(name, "updated_at goes backwards",
                 f"{q.get('updated_at')} -> {p.get('updated_at')}")
 
@@ -187,8 +237,7 @@ def check_sequence(run):
                 f"{sorted(gone)}. Every message is a whole snapshot; omitting what you did "
                 f"not change erases it for every consumer.")
 
-        prev_assets = {a["asset_id"]: a for a in q.get("assets", [])}
-        now_assets = {a["asset_id"]: a for a in p.get("assets", [])}
+        prev_assets, now_assets = assets[i - 1], assets[i]
         dropped = set(prev_assets) - set(now_assets)
         if dropped:
             err(name, "asset(s) dropped from the snapshot", f"{sorted(dropped)}")
@@ -222,20 +271,40 @@ def check_sequence(run):
         # --- attribution, only checkable when envelopes were supplied
         if env and qenv:
             changed = _content_changed(q, p)
-            same_sys = (env.get("originating_system", {}).get("system_id")
-                        == qenv.get("originating_system", {}).get("system_id"))
+            same_sys = _system_id(env) == _system_id(qenv)
             if changed and same_sys and env.get("message_id") == qenv.get("message_id"):
                 err(name, "republished with a stale message_id",
                     "A new snapshot is a new message and needs its own message_id.")
 
 
+def _assets(name, payload):
+    """assets[] keyed by asset_id. An entry without one is reported and left out,
+    because identity across the run is the only thing these rules read it for."""
+    out = {}
+    xs = payload.get("assets")
+    for i, a in enumerate(xs if isinstance(xs, list) else []):
+        aid = a.get("asset_id") if isinstance(a, dict) else None
+        if not isinstance(aid, str):
+            err(name, f"assets[{i}] has no asset_id",
+                "its identity cannot be followed across the run")
+            continue
+        out[aid] = a
+    return out
+
+
 def _reviews(payload, key, idfield):
     out = {}
     for x in payload.get(key, []) or []:
-        st = (x.get("review") or {}).get("state")
+        review = x.get("review") if isinstance(x, dict) else None
+        st = review.get("state") if isinstance(review, dict) else None
         if st:
             out[x.get(idfield)] = st
     return out
+
+
+def _system_id(env):
+    sysobj = env.get("originating_system")
+    return sysobj.get("system_id") if isinstance(sysobj, dict) else None
 
 
 def _content_changed(a, b):
@@ -263,7 +332,8 @@ def main():
     if not sp:
         return print("no story-context schema found; pass --schema PATH") or 2
     schema = json.load(open(sp, encoding="utf-8"))
-    v = Draft202012Validator(schema)
+    # Conformance section 4: formats are asserted, as tools/validate.py does.
+    v = Draft202012Validator(schema, format_checker=Draft202012Validator.FORMAT_CHECKER)
 
     run = load_inputs(inputs, envelopes)
     if not run:
