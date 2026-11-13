@@ -1,0 +1,36 @@
+[package]
+name = "som"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.89"
+description = "Story Object Model (SOM) 1.0: typed messages, conformant validation and an envelope builder"
+license = "Apache-2.0"
+repository = "https://github.com/storyobjectmodel/som"
+homepage = "https://storyobjectmodel.com"
+readme = "README.md"
+keywords = ["som", "story-object-model", "newsroom", "broadcast", "json-schema"]
+categories = ["encoding", "data-structures"]
+# Not published to crates.io. The crate embeds ../../schema/ at compile time and is
+# consumed from this repository as a path or git dependency; whether it is ever
+# published, and under what name, is a working-group decision.
+publish = false
+
+[features]
+default = ["validate"]
+# JSON Schema validation (`som::validate`) and the sequence checker built on it
+# (`som::sequence`). Without it the crate is the typed model, the envelope builder
+# and the RFC 3339 helpers, with serde, serde_json and uuid as its only dependencies.
+validate = ["dep:jsonschema"]
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+uuid = { version = "1", features = ["v5", "v7"] }
+jsonschema = { version = "0.60", default-features = false, optional = true }
+
+[lints.rust]
+unsafe_code = "forbid"
+missing_docs = "deny"
+
+[lints.clippy]
+pedantic = { level = "warn", priority = -1 }
